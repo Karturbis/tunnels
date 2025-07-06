@@ -1,41 +1,37 @@
 from pygame.math import Vector2
+from pygame.draw import rect, circle
+from pygame import Rect
 
 class Character():
 
-    def __init__(self, shape:str, color:str, length:int=0, width:int=0, radius:int=0):
+    def __init__(self, color:str, width:int, height:int):
         self.color: str = color
-        if shape == "circle":
-            self.radius: int = radius
-        elif shape == "rect":
-            self.length: int = length
-            self.width: int = width
-        self.shape: str = shape
+        self.height: int = height
+        self.width: int = width
         # init movement variables
-        self.position: Vector2 = Vector2(0, 0)
-        self.velocity: Vector2 = Vector2(0, 0)
+        self.direction = (0, 0)
+        self.speed: int = 0
         self.acceleration: Vector2 = Vector2(0, 0)
+        self.body = Rect(0,0, width, height)
 
-    def update_movement(self):
-        self.velocity += self.acceleration
-        self.position += self.velocity
+##############
+## physics: ##
+##############
 
+    def set_position(self, position_x, position_y):
+        self.body.update(position_x, position_y, self.width, self.height)
 
+    def update(self, speed: int, direction: Vector2, dt:int):
+        self.speed = speed
+        self.direction = direction
+        self.body.center += self.speed*self.direction*dt
 
-
-
+    def get_hitbox(self):
+        return self.body
 
 ##############
 ## drawing: ##
 ##############
 
-    def draw_circle(self):
-        pass
-
-    def draw_rect(self):
-        pass
-
-    def draw(self):
-        if self.shape == "circle":
-            self.draw_circle()
-        elif self.shape == "rect":
-            self.draw_rect()
+    def draw(self, surface, scale):
+        rect(surface, self.color, self.body.scale_by(scale))
