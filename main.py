@@ -54,29 +54,27 @@ class Main():
                 else:
                     direction.x = 0
 
-            # update physics:
+            # update physics:d
+            self.character.update(300, direction, dt)
             # check collisions with screen edge:
             hitbox = self.character.get_hitbox()
             # x-axis:
-            if hitbox.topleft[0] < 0:
+            if hitbox.left < 0:
                 print("out of screen left")
                 self.character.set_position(0, hitbox.top)
             elif hitbox.right > DISPLAY_SIZE[0]:
-                self.character.set_position(DISPLAY_SIZE[0], hitbox.top)
+                self.character.set_position(DISPLAY_SIZE[0]-dc.width, hitbox.top)
                 print("out of screen right")
             # y-axis:
             if hitbox.top < 0:
                 print("out of screen top")
                 self.character.set_position(hitbox.left, 0)
             elif hitbox.bottom > DISPLAY_SIZE[1]:
-                self.character.set_position(hitbox.left, DISPLAY_SIZE[1])
+                self.character.set_position(hitbox.left, DISPLAY_SIZE[1]-dc.height)
                 print("out of screen bottom")
             # check other collisions:
             if hitbox.colliderect(self.walls[0].get_hitbox()):
                 print("collision with wall")
-
-
-            self.character.update(300, direction, dt)
             # Update stuff on screen
             # wipe screen by filling it with the background color:
             self.screen.fill(COLOR_BG)
