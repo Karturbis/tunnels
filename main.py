@@ -37,13 +37,19 @@ class Main():
                     running = False
                 keys = pygame.key.get_pressed()
 
-                if keys[pygame.K_w]:
+
+
+                if keys[pygame.K_w] and keys[pygame.K_s]:
+                    direction.y = 0
+                elif keys[pygame.K_w]:
                     direction.y = -1
                 elif keys[pygame.K_s]:
                     direction.y = 1
                 else:
                     direction.y = 0
-                if keys[pygame.K_a]:
+                if keys[pygame.K_a] and keys[pygame.K_d]:
+                    direction.x = 0
+                elif keys[pygame.K_a]:
                     direction.x = -1
                 elif keys[pygame.K_d]:
                     direction.x = 1
