@@ -33,5 +33,5 @@ class Character():
 ## drawing: ##
 ##############
 
-    def draw(self, surface, scale):
-        rect(surface, self.color, self.body.scale_by(scale))
+    def draw(self, surface):
+        rect(surface, self.color, self.body)

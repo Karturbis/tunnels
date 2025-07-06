@@ -8,7 +8,7 @@ import characters.default_character as dc
 #consts:
 COLOR_BG = "sienna4"
 COLOR_WALL = "violetred4"
-WALL_SIZE = 30
+WALL_SIZE = 20
 DISPLAY_SIZE = (1280, 720)  # only change for testing
 FPS = 60
 
@@ -24,7 +24,7 @@ class Main():
         # general setup:
         self.scale = 5
         self.walls = []
-        self.walls.append(Wall(COLOR_WALL, pygame.math.Vector2(50, 20), 60))
+        self.walls.append(Wall(COLOR_WALL, pygame.math.Vector2(50, 20), WALL_SIZE))
 
 
     def game_loop(self):
@@ -36,9 +36,7 @@ class Main():
                 if event.type == pygame.QUIT:
                     running = False
                 keys = pygame.key.get_pressed()
-
-
-
+                # movement:
                 if keys[pygame.K_w] and keys[pygame.K_s]:
                     direction.y = 0
                 elif keys[pygame.K_w]:
@@ -56,12 +54,11 @@ class Main():
                 else:
                     direction.x = 0
 
-
             # update physics:
             # check collisions with screen edge:
             hitbox = self.character.get_hitbox()
             # x-axis:
-            if hitbox.left < 0:
+            if hitbox.topleft[0] < 0:
                 print("out of screen left")
                 self.character.set_position(0, hitbox.top)
             elif hitbox.right > DISPLAY_SIZE[0]:
@@ -84,7 +81,7 @@ class Main():
             # wipe screen by filling it with the background color:
             self.screen.fill(COLOR_BG)
             self.walls[0].draw(self.screen)
-            self.character.draw(self.screen, self.scale)
+            self.character.draw(self.screen)
 
             # update the display
             pygame.display.flip()
