@@ -13,6 +13,7 @@ class Character():
         self.speed: int = 0
         self.acceleration: Vector2 = Vector2(0, 0)
         self.body = Rect(0,0, width, height)
+        self.hitbox = self.body
 
 ##############
 ## physics: ##
@@ -21,10 +22,20 @@ class Character():
     def set_position(self, position_x, position_y):
         self.body.update(position_x, position_y, self.width, self.height)
 
-    def update(self, speed: int, direction: Vector2, dt:int):
+    def update_physics(self, speed: int, direction: Vector2):
         self.speed = speed
         self.direction = direction
-        self.body.center += self.speed*self.direction*dt
+
+    def update_hitbox_x(self, dt:int):
+        self.hitbox.center += Vector2(self.speed*self.direction.x*dt, 0)
+
+    def update_hitbox_y(self, dt:int):
+        self.hitbox.center += Vector2(0, self.speed*self.direction.y*dt)
+
+    def update_body(self, hitbox: Rect=None):
+        if hitbox:
+            self.hitbox = hitbox
+        self.body = self.hitbox
 
     def get_hitbox(self):
         return self.body
