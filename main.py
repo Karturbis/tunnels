@@ -1,14 +1,14 @@
 # imports:
 import pygame
 from pygame.math import Vector2
-from walls import Walls
+from wall import Wall
 from character import Character
 import characters.default_character as dc
 
 
 #consts:
 COLOR_BG = "sienna4"
-COLOR_WALL = "violetred4"
+COLOR_WALL = "black"#"violetred4"
 WALL_SIZE = 70
 DISPLAY_SIZE = (1280, 720)  # only change for testing
 FPS = 60
@@ -29,7 +29,7 @@ class Main():
         # general setup:
         self.scale = 5
         self.walls = []
-        self.walls.append(Walls(COLOR_WALL, Vector2(600, 350), WALL_SIZE))
+        self.walls.append(Wall(COLOR_WALL, Vector2(600, 350), WALL_SIZE))
         self.wall_hitboxes = [i.get_hitbox() for i in self.walls]
 
     def screen_collisions_x(self, hitbox):
