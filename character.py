@@ -125,7 +125,7 @@ class Character():
                     p1 = direction_lines[0][1]
                     p2 = direction_lines[-1][0]
                     p3 = direction_lines[-1][1]
-                    draw.polygon(surface, "pink", [p0, p2, p3, p1])
+                    draw.polygon(surface, "black", [p0, p2, p3, p1])
                 except Exception:
                     pass
 

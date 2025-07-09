@@ -10,19 +10,19 @@ import random
 #consts:
 COLOR_BG = "sienna4"
 COLOR_WALL = "black"#"violetred4"
-WALL_SIZE = 42
+WALL_SIZE = 20
 DISPLAY_SIZE = (1280, 720)  # only change for testing
 FPS = 60
 
 
 # consts for developing:
 FRICTION_COEFFICIENT = 0.1
-#SEED = random.randint(0, 12000)
-SEED = 8094
+SEED = random.randint(0, 12000)
+#SEED = 8094
 print(f"Seed: {SEED}")
 random.seed(SEED)
-WALLNUMBER = 42
-SIGHT_RADIUS = 500
+WALLNUMBER = 300
+SIGHT_RADIUS = 200
 
 class Main():
 
