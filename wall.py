@@ -15,3 +15,6 @@ class Wall():
 
     def get_hitbox(self):
         return self.body
+    
+    def get_position(self):
+        return self.position
