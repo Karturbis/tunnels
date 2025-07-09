@@ -1,21 +1,28 @@
 # imports:
+import math
 import pygame
 from pygame.math import Vector2
 from wall import Wall
 from character import Character
 import characters.default_character as dc
-
+import random
 
 #consts:
 COLOR_BG = "sienna4"
 COLOR_WALL = "black"#"violetred4"
-WALL_SIZE = 70
+WALL_SIZE = 42
 DISPLAY_SIZE = (1280, 720)  # only change for testing
 FPS = 60
 
 
 # consts for developing:
-SPEED = 300
+FRICTION_COEFFICIENT = 0.1
+#SEED = random.randint(0, 12000)
+SEED = 8094
+print(f"Seed: {SEED}")
+random.seed(SEED)
+WALLNUMBER = 42
+SIGHT_RADIUS = 500
 
 class Main():
 
@@ -29,52 +36,27 @@ class Main():
         # general setup:
         self.scale = 5
         self.walls = []
-        self.walls.append(Wall(COLOR_WALL, Vector2(600, 350), WALL_SIZE))
+        for i in range(WALLNUMBER):
+            self.walls.append(Wall("black", Vector2(random.randint(0, DISPLAY_SIZE[0]), random.randint(0, DISPLAY_SIZE[1])), WALL_SIZE))
         self.wall_hitboxes = [i.get_hitbox() for i in self.walls]
-
-    def screen_collisions_x(self, hitbox):
-        if hitbox.left < 0:
-            print("out of screen left")
-            self.character.set_position(0, hitbox.top)
-        elif hitbox.right > DISPLAY_SIZE[0]:
-            self.character.set_position(DISPLAY_SIZE[0]-dc.width, hitbox.top)
-            print("out of screen right")
-
-    def screen_collisions_y(self, hitbox):
-        if hitbox.top < 0:
-            print("out of screen top")
-            self.character.set_position(hitbox.left, 0)
-        elif hitbox.bottom > DISPLAY_SIZE[1]:
-            self.character.set_position(hitbox.left, DISPLAY_SIZE[1]-dc.height)
-            print("out of screen bottom")
-
-    def wall_collisions_x(self, hitbox, direction):
-        coll = hitbox.collidelist(self.wall_hitboxes)
-        if coll >=0:
-            coll_hitbox = self.wall_hitboxes[coll]
-            if direction.x < 0:
-                self.character.set_position(coll_hitbox.right, hitbox.y)
-            elif direction.x > 0:
-                self.character.set_position(coll_hitbox.left - dc.width, hitbox.y)
-
-
-    def wall_collisions_y(self, hitbox, direction):
-        coll = hitbox.collidelist(self.wall_hitboxes)
-        if coll >=0:
-            coll_hitbox = self.wall_hitboxes[coll]
-            if direction.y < 0:
-                self.character.set_position(hitbox.x, coll_hitbox.bottom)
-            elif direction.y > 0:
-                self.character.set_position(hitbox.x, coll_hitbox.top -dc.width)
 
     def game_loop(self):
         running = True
         direction = Vector2(0, 0)
+        debug_draw_lines: bool = False
+        debug_draw_polygons: bool = False
         while running:
             dt = self.clock.tick(FPS) / 1000
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_r:
+                        debug_draw_lines = True
+                    elif event.key == pygame.K_e:
+                        debug_draw_lines = False
+                    if event.key == pygame.K_q:
+                        debug_draw_polygons = not debug_draw_polygons
                 keys = pygame.key.get_pressed()
                 # movement:
                 if keys[pygame.K_w] and keys[pygame.K_s]:
@@ -95,24 +77,15 @@ class Main():
                     direction.x = 0
 
             # update physics:
-            self.character.update_physics(SPEED, direction)
-            # check collisions on x-axis
-            self.character.update_hitbox_x(dt)
-            hitbox = self.character.get_hitbox()
-            self.screen_collisions_x(hitbox)
-            self.wall_collisions_x(hitbox, direction)
-            # check collisions on y-axis
-            self.character.update_hitbox_y(dt)
-            hitbox = self.character.get_hitbox()
-            self.screen_collisions_y(hitbox)
-            self.wall_collisions_y(hitbox, direction)
-            # update the actual character to the position of the hitbox
-            self.character.update_body(hitbox)
-            # Update stuff on screen
+            self.character.accelerate(direction.clamp_magnitude(1), 10000)
+            self.character.update(direction, self.wall_hitboxes, FRICTION_COEFFICIENT, dt, DISPLAY_SIZE)
             # wipe screen by filling it with the background color:
             self.screen.fill(COLOR_BG)
-            self.walls[0].draw(self.screen)  # draw walls
-            self.character.draw(self.screen)  # draw character
+            for i in self.walls:
+                dist = math.hypot(abs(i.get_position()[0] -self.character.get_position()[0]), abs(i.get_position()[1]-self.character.get_position()[1]))
+                if dist < SIGHT_RADIUS:
+                    i.draw(self.screen)  # draw walls
+            self.character.draw(self.screen, self.wall_hitboxes, debug_draw_lines, debug_draw_polygons)  # draw character
             # update the display
             pygame.display.flip()
         # if game endet:
