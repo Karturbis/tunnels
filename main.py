@@ -77,15 +77,20 @@ class Main():
                     direction.x = 0
 
             # update physics:
+            walls_in_sight = [
+                wall for wall in self.walls
+                    if math.hypot(
+                        abs(wall.get_position()[0] -self.character.get_position()[0]),
+                        abs(wall.get_position()[1]-self.character.get_position()[1])) < SIGHT_RADIUS
+                ]
+            wall_hitboxes_in_sight = [i.get_hitbox() for i in walls_in_sight]
             self.character.accelerate(direction.clamp_magnitude(1), 10000)
             self.character.update(direction, self.wall_hitboxes, FRICTION_COEFFICIENT, dt, DISPLAY_SIZE)
             # wipe screen by filling it with the background color:
             self.screen.fill(COLOR_BG)
-            for i in self.walls:
-                dist = math.hypot(abs(i.get_position()[0] -self.character.get_position()[0]), abs(i.get_position()[1]-self.character.get_position()[1]))
-                if dist < SIGHT_RADIUS:
-                    i.draw(self.screen)  # draw walls
-            self.character.draw(self.screen, self.wall_hitboxes, debug_draw_lines, debug_draw_polygons)  # draw character
+            for wall in walls_in_sight:
+                wall.draw(self.screen)
+            self.character.draw(self.screen, wall_hitboxes_in_sight, debug_draw_lines, debug_draw_polygons)  # draw character
             # update the display
             pygame.display.flip()
         # if game endet:
