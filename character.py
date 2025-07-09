@@ -5,7 +5,7 @@ from pygame import FRect
 
 class Character():
 
-    def __init__(self, color:str, width:int, height:int):
+    def __init__(self, color:str, width:int, height:int, position: Vector2):
         self.color: str = color
         self.height: int = height
         self.width: int = width
@@ -14,7 +14,7 @@ class Character():
         self.speed: int = 0
         self.velocity: Vector2 = Vector2(0, 0)
         self.acceleration: Vector2 = Vector2(0, 0)
-        self.body = FRect(0,0, width, height)
+        self.body = FRect(position, (width, height))
         self.hitbox = self.body
 
 ##############

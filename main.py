@@ -2,7 +2,7 @@
 import math
 import pygame
 from pygame.math import Vector2
-from wall import Wall
+from walls import Walls
 from character import Character
 import characters.default_character as dc
 import random
@@ -21,8 +21,9 @@ SEED = random.randint(0, 12000)
 #SEED = 8094
 print(f"Seed: {SEED}")
 random.seed(SEED)
-WALLNUMBER = 300
+WALL_PROBABILITY = 3  # in percent
 SIGHT_RADIUS = 200
+CHARACTER_START_POSITION = Vector2(DISPLAY_SIZE[0]//2, DISPLAY_SIZE[1]//2)
 
 class Main():
 
@@ -32,19 +33,18 @@ class Main():
         self.screen = pygame.display.set_mode(DISPLAY_SIZE)
         self.clock = pygame.time.Clock()
         # character setup:
-        self.character = Character(dc.color, dc.width, dc.height)
+        self.character = Character(dc.color, dc.width, dc.height, CHARACTER_START_POSITION)
         # general setup:
         self.scale = 5
-        self.walls = []
-        for i in range(WALLNUMBER):
-            self.walls.append(Wall("black", Vector2(random.randint(0, DISPLAY_SIZE[0]), random.randint(0, DISPLAY_SIZE[1])), WALL_SIZE))
-        self.wall_hitboxes = [i.get_hitbox() for i in self.walls]
+        self.walls_obj = Walls("black", WALL_SIZE, self.screen, WALL_PROBABILITY, SEED)
+        self.wall_hitboxes = self.walls_obj.get_walls()
 
     def game_loop(self):
         running = True
         direction = Vector2(0, 0)
         debug_draw_lines: bool = False
         debug_draw_polygons: bool = False
+        debug_line_of_sight: bool = True
         while running:
             dt = self.clock.tick(FPS) / 1000
             for event in pygame.event.get():
@@ -52,9 +52,9 @@ class Main():
                     running = False
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r:
-                        debug_draw_lines = True
+                        debug_draw_lines = not debug_draw_lines
                     elif event.key == pygame.K_e:
-                        debug_draw_lines = False
+                        debug_line_of_sight = not debug_line_of_sight
                     if event.key == pygame.K_q:
                         debug_draw_polygons = not debug_draw_polygons
                 keys = pygame.key.get_pressed()
@@ -77,19 +77,21 @@ class Main():
                     direction.x = 0
 
             # update physics:
-            walls_in_sight = [
-                wall for wall in self.walls
-                    if math.hypot(
-                        abs(wall.get_position()[0] -self.character.get_position()[0]),
-                        abs(wall.get_position()[1]-self.character.get_position()[1])) < SIGHT_RADIUS
-                ]
-            wall_hitboxes_in_sight = [i.get_hitbox() for i in walls_in_sight]
+            if debug_line_of_sight:
+                wall_hitboxes_in_sight = [
+                    wall for wall in self.wall_hitboxes
+                        if math.hypot(
+                            abs(wall.center[0] -self.character.get_position()[0]),
+                            abs(wall.center[1]-self.character.get_position()[1])) < SIGHT_RADIUS
+                    ]
+            else:
+                wall_hitboxes_in_sight = self.wall_hitboxes
             self.character.accelerate(direction.clamp_magnitude(1), 10000)
             self.character.update(direction, self.wall_hitboxes, FRICTION_COEFFICIENT, dt, DISPLAY_SIZE)
             # wipe screen by filling it with the background color:
             self.screen.fill(COLOR_BG)
-            for wall in walls_in_sight:
-                wall.draw(self.screen)
+            for wall in wall_hitboxes_in_sight:
+                self.walls_obj.draw(self.screen, wall)
             self.character.draw(self.screen, wall_hitboxes_in_sight, debug_draw_lines, debug_draw_polygons)  # draw character
             # update the display
             pygame.display.flip()
