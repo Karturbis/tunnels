@@ -82,7 +82,7 @@ class Main():
                     wall for wall in self.wall_hitboxes
                         if math.hypot(
                             abs(wall.center[0] -self.character.get_position()[0]),
-                            abs(wall.center[1]-self.character.get_position()[1])) < SIGHT_RADIUS
+                            abs(wall.center[1] -self.character.get_position()[1])) < SIGHT_RADIUS
                     ]
             else:
                 wall_hitboxes_in_sight = self.wall_hitboxes
