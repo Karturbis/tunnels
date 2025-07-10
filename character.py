@@ -1,3 +1,4 @@
+import math
 from numpy import sign
 from pygame.math import Vector2
 from pygame import draw
@@ -105,7 +106,8 @@ class Character():
 
     def draw(self, surface, wall_hitboxes, draw_lines:bool, draw_polygons:bool):
         self._draw_body(surface)
-        lines = self._create_lines(surface, wall_hitboxes)
+        #lines = self._create_lines(surface, wall_hitboxes)
+        lines = self._create_outlines(wall_hitboxes)
         if draw_lines:
             self._draw_lines_of_sight(surface, lines)
         if draw_polygons:
@@ -113,21 +115,47 @@ class Character():
 
     def _draw_lines_of_sight(self, surface, lines):
         for i in lines:
-            for j in i:
-                for k in j:
+                for k in i:
                     draw.line(surface, "black" ,k[0], k[1])
 
     def _draw_shadow_polygon(self, surface, lines):
-        for wall_lines in lines:
-            for direction_lines in wall_lines:
-                try:
-                    p0 = direction_lines[0][0]
-                    p1 = direction_lines[0][1]
-                    p2 = direction_lines[-1][0]
-                    p3 = direction_lines[-1][1]
-                    draw.polygon(surface, "black", [p0, p2, p3, p1])
-                except Exception:
-                    pass
+        for direction_lines in lines:
+            try:
+                p0 = direction_lines[0][0]
+                p1 = direction_lines[0][1]
+                p2 = direction_lines[-1][0]
+                p3 = direction_lines[-1][1]
+                draw.polygon(surface, "black", [p0, p2, p3, p1])
+            except Exception:
+                pass
+
+    def _create_outlines(self, wall_hitboxes) -> list:
+        position = self.hitbox.center
+        outlines: list = []
+        for wall in wall_hitboxes:
+            line_candidates: list = []
+            line_candidates.append((wall.topleft, position))
+            line_candidates.append((wall.bottomleft, position))
+            line_candidates.append((wall.topright, position))
+            line_candidates.append((wall.bottomright, position))
+            outlines_temp: list = []
+            for line_candidate in line_candidates:
+                shortest_line = 0  # remove shortest line, to prevent three lines going to one rect
+                shortest_line_length = 10000000000000  # definetly bigger than the shortest line
+                if not wall.clipline(line_candidate):
+                    # set new shortest line length and shortest line, if necessary:
+                    length = math.hypot(
+                        (line_candidate[0][0] - line_candidate[1][0]),
+                        (line_candidate[0][1] - line_candidate[1][1])
+                        )
+                    if length < shortest_line_length:
+                        shortest_line = len(outlines_temp)  # index of shortest line
+                        shortest_line_length = length
+                    outlines_temp.append(line_candidate)
+            if len(outlines_temp) == 3:
+                outlines_temp.pop(shortest_line)
+            outlines.append(outlines_temp)
+        return outlines
 
     # lines of sight
     def _create_lines(self, surface, wall_hitboxes) -> list:
@@ -153,5 +181,3 @@ class Character():
                     wall_lines[3].append(tuple((cl_right[1], (width, i))))
             lines.append(wall_lines)
         return lines
-
-
